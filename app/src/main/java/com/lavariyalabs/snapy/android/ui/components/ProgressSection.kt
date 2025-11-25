@@ -12,6 +12,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Brush
 
 /**
  * ProgressSection Composable
@@ -28,11 +32,27 @@ fun ProgressSection(
     totalCards: Int,            // Total cards in session
     progressPercent: Float      // 0f to 100f
 ) {
+
+    // ========== ANIMATED PROGRESS VALUE ==========
+    /**
+     * Smoothly animate the progress value
+     * WHY? Makes progress bar fill animation feel organic
+     */
+    val animatedProgress: Float by animateFloatAsState(
+        targetValue = progressPercent / 100f,
+        animationSpec = tween(durationMillis = 600),
+        label = "progressAnimation"
+    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = Color(0xFF6366F1)  // Indigo color
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF6366F1),  // Indigo
+                        Color(0xFF8B5CF6)   // Purple
+                    )
+                )
             )
             .padding(16.dp)
     ) {
@@ -41,18 +61,31 @@ fun ProgressSection(
             text = "$currentCard / $totalCards",
             color = Color.White,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 12.dp)
         )
 
         // ========== PROGRESS BAR ==========
         LinearProgressIndicator(
-            progress = { progressPercent / 100f },  // Convert % to 0-1 range
+            progress = { animatedProgress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(6.dp),
-            color = Color(0xFF10B981),              // Green color for progress
-            trackColor = Color.White.copy(alpha = 0.3f)  // Transparent white background
+                .height(8.dp),
+            color = Color(0xFF10B981),              // Green progress
+            trackColor = Color.White.copy(alpha = 0.25f),
+        )
+
+        // ========== PROGRESS TEXT (Added) ==========
+        /**
+         * Shows percentage and motivational text
+         * Helps user understand progress visually and numerically
+         */
+        Text(
+            text = "${progressPercent.toInt()}% Complete",
+            color = Color.White.copy(alpha = 0.9f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(top = 10.dp)
         )
     }
 }

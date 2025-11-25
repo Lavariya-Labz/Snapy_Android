@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lavariyalabs.snapy.android.ui.components.AnswerButtonsSection
 import com.lavariyalabs.snapy.android.ui.components.FlashcardComponent
@@ -51,12 +52,13 @@ fun FlashcardScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F4F6))  // Light gray background
+            .background(Color(0xFFF8FAFC))  // Light slate background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .background(Color(0xFFF8FAFC)),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -69,16 +71,21 @@ fun FlashcardScreen(
 
             // ========== CENTER: FLASHCARD (IF AVAILABLE) ==========
             if (currentCard != null) {
-                Spacer(modifier = Modifier.weight(1f))  // Push card to center
-
-                FlashcardComponent(
-                    isFlipped = isCardFlipped,
-                    question = currentCard.question,
-                    answer = currentCard.answer,
-                    onCardClick = { viewModel.toggleCardFlip() }
-                )
-
-                Spacer(modifier = Modifier.weight(1f))  // Push buttons to bottom
+                Box(
+                    modifier = Modifier
+                        .weight(1f)  // Takes all remaining space
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    FlashcardComponent(
+                        isFlipped = isCardFlipped,
+                        question = currentCard.question,
+                        answer = currentCard.answer,
+                        onCardClick = { viewModel.toggleCardFlip() },
+                        cardIndex = quizSession.currentCardIndex  // Pass for color variation
+                    )
+                }
             }
 
             // ========== BOTTOM: ANSWER BUTTONS ==========
