@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -58,4 +59,22 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // ========== NEW: SUPABASE DEPENDENCIES ==========
+    // WHY each one?
+    // - bom: Bill of Materials (manages versions)
+    // - postgrest-kt: Database queries
+    // - auth-kt: User authentication (for future)
+    // - ktor-client-android: HTTP client for requests
+    // - kotlinx-serialization-json: JSON conversion
+
+    //BOM (Bill of Materials) - manages all Supabase versions
+    implementation(platform(libs.supabase.bom))
+    // Core Supabase libraries
+    implementation(libs.supabase.postgrest.kt)
+    implementation(libs.supabase.auth.kt)
+    // HTTP client
+    implementation(libs.ktor.client.android)
+    // Serialization
+    implementation(libs.kotlinx.serialization.json)
 }

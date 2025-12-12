@@ -7,7 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import com.lavariyalabs.snapy.android.data.model.Flashcard
 import com.lavariyalabs.snapy.android.data.model.QuizSession
-
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import com.lavariyalabs.snapy.android.data.FlashcardRepository
+import com.lavariyalabs.snapy.android.data.remote.FlashcardRemoteDataSource
 /**
  * ViewModel manages all UI state for the flashcard screen.
  *
@@ -16,122 +19,135 @@ import com.lavariyalabs.snapy.android.data.model.QuizSession
  * - Single place for state logic
  * - Decouples UI (Composables) from business logic
  * - Lifecycle-aware (automatically cleaned up when not needed)
+ *
+ * FlashcardViewModel - UI State Management
+ *
+ * UPDATED WITH SUPABASE:
+ * - Fetches data from Supabase instead of static sample data
+ * - Uses Repository pattern
+ * - Manages loading/error states
  */
 class FlashcardViewModel : ViewModel() {
+
+    // ========== DEPENDENCIES ==========
+    /**
+     * Create instances of data layer
+     */
+    private val remoteDataSource = FlashcardRemoteDataSource()
+    private val repository = FlashcardRepository(remoteDataSource)
 
     // ============= STATE VARIABLES =============
 
     /**
-     * Backing property: Private, mutable
-     * Public property: Exposed as read-only State
-     *
-     * WHY this pattern?
-     * - Prevents external code from accidentally modifying state
-     * - Only ViewModel can modify data
-     * - UI only reads, doesn't write directly
+     * Quiz session state - tracks user progress
      */
-    private val _quizSession = mutableStateOf(QuizSession(totalCards = 10))
+    private val _quizSession = mutableStateOf(QuizSession(totalCards = 0))
     val quizSession: State<QuizSession> = _quizSession
 
+    /**
+     * Card flip state - is back side showing?
+     */
     private val _currentCardFlipped = mutableStateOf(false)
     val currentCardFlipped: State<Boolean> = _currentCardFlipped
 
-    private val _cardFlipAnimation = mutableStateOf(0f)  // 0f = front, 1f = back
-    val cardFlipAnimation: State<Float> = _cardFlipAnimation
-
+    /**
+     * All flashcards from database
+     * Initially empty, populated when fetched
+     */
+    private val _flashcards = mutableStateOf<List<Flashcard>>(emptyList())
+    val flashcards: State<List<Flashcard>> = _flashcards
 
     /**
-     * Sample flashcards data for testing UI
+     * Loading state - show spinner while fetching
+     * WHY? User should see feedback while waiting
      */
-    private val sampleFlashcards = listOf(
-        Flashcard(
-            id = 1,
-            question = "What is the process by which plants make their own food?",
-            answer = "Photosynthesis is the process where plants use sunlight, water, and carbon dioxide to create glucose (sugar) and oxygen. It occurs mainly in the leaves.",
-            topic = "Biology",
-            difficulty = "EASY"
-        ),
-        Flashcard(
-            id = 2,
-            question = "What is the capital of France?",
-            answer = "Paris is the capital city of France, located in the north-central part of the country along the Seine River.",
-            topic = "Geography",
-            difficulty = "EASY"
-        ),
-        Flashcard(
-            id = 3,
-            question = "Define mitochondria and its function.",
-            answer = "Mitochondria are oval-shaped organelles in cells that generate energy in the form of ATP through cellular respiration. Often called the 'powerhouse of the cell'.",
-            topic = "Biology",
-            difficulty = "MEDIUM"
-        ),
-        Flashcard(
-            id = 4,
-            question = "What is the formula for photosynthesis?",
-            answer = "6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂\n\nCarbon dioxide + Water + Light → Glucose + Oxygen",
-            topic = "Biology",
-            difficulty = "HARD"
-        ),
-        Flashcard(
-            id = 5,
-            question = "What does DNA stand for?",
-            answer = "DNA stands for Deoxyribonucleic Acid. It is the molecule that carries genetic instructions for life in all known organisms.",
-            topic = "Biology",
-            difficulty = "MEDIUM"
-        ),
-        Flashcard(
-            id = 6,
-            question = "Name the 5 main components of blood.",
-            answer = "1. Red Blood Cells (oxygen transport)\n2. White Blood Cells (immunity)\n3. Platelets (clotting)\n4. Plasma (liquid medium)\n5. Antibodies (disease fighting)",
-            topic = "Biology",
-            difficulty = "MEDIUM"
-        ),
-        Flashcard(
-            id = 7,
-            question = "What is the definition of evolution?",
-            answer = "Evolution is the process of change in all forms of life over time. It occurs through natural selection, where organisms with beneficial traits are more likely to survive and reproduce.",
-            topic = "Biology",
-            difficulty = "HARD"
-        ),
-        Flashcard(
-            id = 8,
-            question = "What is the difference between prokaryotes and eukaryotes?",
-            answer = "Prokaryotes (bacteria, archaea) lack a nucleus and membrane-bound organelles. Eukaryotes (animals, plants, fungi) have a nucleus containing DNA and specialized organelles.",
-            topic = "Biology",
-            difficulty = "HARD"
-        ),
-        Flashcard(
-            id = 9,
-            question = "What is the role of enzymes in cells?",
-            answer = "Enzymes are protein catalysts that speed up chemical reactions in cells without being consumed. They lower activation energy needed for reactions to occur.",
-            topic = "Biology",
-            difficulty = "MEDIUM"
-        ),
-        Flashcard(
-            id = 10,
-            question = "Define osmosis and give an example.",
-            answer = "Osmosis is the movement of water across a semipermeable membrane from an area of low solute concentration to high solute concentration. Example: A raisin absorbs water and swells when placed in pure water.",
-            topic = "Biology",
-            difficulty = "MEDIUM"
-        )
-    )
+    private val _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> = _isLoading
+
+    /**
+     * Error message - if something goes wrong
+     * WHY? Tell user what failed
+     */
+    private val _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage: State<String?> = _errorMessage
+
+    // ========== INITIALIZATION ==========
+
+    /**
+     * loadFlashcards() - Fetch data from Supabase
+     *
+     * SUSPEND FUNCTION + COROUTINE:
+     * - viewModelScope.launch starts a coroutine
+     * - Runs on background thread (doesn't block UI)
+     * - When done, updates state
+     * - State updates trigger recomposition (UI updates)
+     *
+     * FLOW:
+     * 1. Set isLoading = true (show spinner)
+     * 2. Call repository.getAllFlashcards() (fetch data)
+     * 3. If success: update _flashcards and _quizSession
+     * 4. If error: set _errorMessage
+     * 5. Set isLoading = false (hide spinner)
+     */
+    fun loadFlashcards() {
+        viewModelScope.launch {
+            try {
+                // Show loading state
+                _isLoading.value = true
+                _errorMessage.value = null
+
+                // Fetch from database
+                val cards = repository.getAllFlashcards()
+
+                // Update state
+                _flashcards.value = cards
+                _quizSession.value = QuizSession(totalCards = cards.size)
+
+                // Clear any previous errors
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                // Handle error
+                _errorMessage.value = "Failed to load flashcards: ${e.message}"
+                _flashcards.value = emptyList()
+            } finally {
+                // Always hide loading state
+                _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * loadFlashcardsByTopic() - Fetch filtered data
+     *
+     * @param topic: Topic to filter by
+     */
+    fun loadFlashcardsByTopic(topic: String) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _errorMessage.value = null
+
+                val cards = repository.getFlashcardsByTopic(topic)
+
+                _flashcards.value = cards
+                _quizSession.value = QuizSession(totalCards = cards.size)
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to load flashcards: ${e.message}"
+                _flashcards.value = emptyList()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     // ============= METHODS (FUNCTIONS THAT MODIFY STATE) =============
-
-    /**
-     * Initialize quiz with all sample flashcards
-     * Called when screen first loads
-     */
-    fun initializeQuiz() {
-        _quizSession.value = QuizSession(totalCards = sampleFlashcards.size)
-    }
 
     /**
      * Toggle card flip state (front ↔ back)
      */
     fun toggleCardFlip() {
         _currentCardFlipped.value = !_currentCardFlipped.value
-        // In future, we can add animation here
     }
 
     /**
@@ -143,7 +159,7 @@ class FlashcardViewModel : ViewModel() {
             _quizSession.value = _quizSession.value.copy(
                 currentCardIndex = _quizSession.value.currentCardIndex + 1
             )
-            _currentCardFlipped.value = false  // Reset to show question again
+            _currentCardFlipped.value = false
         }
     }
 
@@ -162,7 +178,7 @@ class FlashcardViewModel : ViewModel() {
 
     /**
      * Record user's response and move to next card
-     *
+     * recordAnswer() - User responded to card
      * @param isCorrect true if user clicked "I knew", false if "I didn't know"
      */
     fun recordAnswer(isCorrect: Boolean) {
@@ -182,18 +198,47 @@ class FlashcardViewModel : ViewModel() {
     }
 
     /**
-     * Get currently displayed flashcard
+     * getCurrentCard() - Get the card user is viewing now
+     *
+     * @return Current flashcard, or null if no cards
      */
     fun getCurrentCard(): Flashcard? {
         val index = _quizSession.value.currentCardIndex
-        return if (index < sampleFlashcards.size) sampleFlashcards[index] else null
+        return if (index < _flashcards.value.size) {
+            _flashcards.value[index]
+        } else {
+            null
+        }
     }
-
     /**
      * Reset entire quiz to starting state
      */
     fun resetQuiz() {
-        _quizSession.value = QuizSession(totalCards = sampleFlashcards.size)
+        _quizSession.value = QuizSession(totalCards = _flashcards.value.size)
         _currentCardFlipped.value = false
     }
 }
+
+/**
+ * LEARNING EXPLANATION:
+ *
+ * viewModelScope.launch:
+ * - Creates coroutine (async operation)
+ * - Lifecycle-aware (cancels when ViewModel destroyed)
+ * - WHY? Network calls take time, can't block UI thread
+ *
+ * try-catch-finally:
+ * - Try: Normal code
+ * - Catch: Handle errors
+ * - Finally: Always runs (cleanup, hide spinner)
+ *
+ * State update triggers recomposition:
+ * - When _flashcards.value changes
+ * - Compose automatically rerenders screen
+ * - Shows new data
+ *
+ * Coroutine safety:
+ * - UI updates only happen on main thread
+ * - viewModelScope handles this automatically
+ * - No need for manual thread management
+ */
