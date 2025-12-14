@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lavariyalabs.snapy.android"
-        minSdk = 30
+        minSdk = 28
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
