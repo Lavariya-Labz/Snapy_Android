@@ -21,21 +21,36 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.lavariyalabs.snapy.android.ui.theme.Snapy_AndroidTheme
 import com.lavariyalabs.snapy.android.ui.screen.FlashcardScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.lavariyalabs.snapy.android.navigation.NavGraph
+import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 
+//class MainActivity : ComponentActivity() {
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        enableEdgeToEdge()
+//        setContent {
+//            Snapy_AndroidTheme {
+//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    Box(modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(innerPadding)
+//                    ) {
+//                        LottieLoadingAnimation()
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             Snapy_AndroidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                    ) {
-                        LottieLoadingAnimation()
-                    }
-                }
+                SnapApp()
             }
         }
     }
@@ -63,10 +78,36 @@ fun LottieLoadingAnimation(modifier: Modifier = Modifier) {
     )
 }
 
-@Preview(showBackground = true)
+/**
+ * SnapApp - Main app container
+ *
+ * Sets up navigation and shared state
+ */
+
 @Composable
-fun FlashcardScreenPreview() {
-    Snapy_AndroidTheme {
-        FlashcardScreen()
+fun SnapApp() {
+    // Navigation controller
+    val navController = rememberNavController()
+
+    // Shared app state (available to all screens)
+    val appStateViewModel: AppStateViewModel = viewModel()
+
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        // Apply the padding to a container wrapping your content
+        Box(modifier = Modifier.padding(innerPadding)) {
+            NavGraph(
+                navController = navController,
+                appStateViewModel = appStateViewModel
+            )
+        }
     }
 }
+
+
+//@Preview(showBackground = true)
+//@Composable
+//fun FlashcardScreenPreview() {
+//    Snapy_AndroidTheme {
+//        FlashcardScreen()
+//    }
+//}
