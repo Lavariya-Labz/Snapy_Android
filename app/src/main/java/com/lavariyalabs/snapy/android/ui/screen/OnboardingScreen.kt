@@ -1,3 +1,5 @@
+package com.lavariyalabs.snapy.android.ui.screen
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

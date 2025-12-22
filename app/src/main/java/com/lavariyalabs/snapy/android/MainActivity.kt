@@ -1,6 +1,5 @@
 package com.lavariyalabs.snapy.android
 
-import OnboardingScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +21,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.lavariyalabs.snapy.android.ui.theme.Snapy_AndroidTheme
 import com.lavariyalabs.snapy.android.ui.screen.FlashcardScreen
+import com.lavariyalabs.snapy.android.ui.screen.OnboardingScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
