@@ -1,46 +1,45 @@
 package com.lavariyalabs.snapy.android.data
 
-import com.lavariyalabs.snapy.android.data.model.Flashcard
-import com.lavariyalabs.snapy.android.data.remote.FlashcardRemoteDataSource
+import com.lavariyalabs.snapy.android.data.model.*
+import com.lavariyalabs.snapy.android.data.remote.SupabaseDataSource
 
 /**
- * FlashcardRepository - Single source of truth for flashcard data
+ * FlashcardRepository - Single source of truth for data
  *
- * WHY Repository pattern?
- * - ViewModel doesn't know WHERE data comes from
- * - Could be database, API, local cache, etc.
- * - Easy to swap data sources
- * - Clean separation of concerns
- *
- * DEPENDENCY INJECTION:
- * - Repository receives dataSource in constructor
- * - Makes testing easier (can inject mock data source)
+ * Abstracts data access
+ * Can switch between Supabase and mock data
  */
-
 class FlashcardRepository(
-    private val remoteDataSource: FlashcardRemoteDataSource
+    private val dataSource: SupabaseDataSource
 ) {
 
-    /**
-     * getAllFlashcards() - Get all flashcards from data source
-     *
-     * Currently just delegates to remote source
-     * In future, could add:
-     * - Local caching (Room database)
-     * - Offline support
-     * - Data transformation
-     */
-    suspend fun getAllFlashcards(): List<Flashcard> {
-        return remoteDataSource.fetchAllFlashcards()
-    }
+    // ========== GRADES & SUBJECTS ==========
+    suspend fun getAllGrades(): List<Grade> = dataSource.getAllGrades()
 
-    /**
-     * getFlashcardsByTopic() - Get filtered flashcards
-     *
-     * @param topic: Filter by this topic
-     * @return Filtered list
-     */
-    suspend fun getFlashcardsByTopic(topic: String): List<Flashcard> {
-        return remoteDataSource.fetchFlashcardsByTopic(topic)
-    }
+    suspend fun getSubjectsByGrade(gradeId: Long): List<Subject> =
+        dataSource.getSubjectsByGrade(gradeId)
+
+    // ========== TERMS & UNITS ==========
+    suspend fun getTermsBySubject(subjectId: Long): List<Term> =
+        dataSource.getTermsBySubject(subjectId)
+
+    suspend fun getUnitsByTerm(termId: Long): List<StudyUnit> =
+        dataSource.getUnitsByTerm(termId)
+
+    // ========== FLASHCARDS ==========
+    suspend fun getFlashcardsByUnit(unitId: Long): List<Flashcard> =
+        dataSource.getFlashcardsByUnit(unitId)
+
+    suspend fun getFlashcardById(flashcardId: Long): Flashcard? =
+        dataSource.getFlashcardById(flashcardId)
+
+    // ========== PROGRESS & RESPONSES ==========
+    suspend fun getUserProgress(userId: String, flashcardId: Long): UserProgress? =
+        dataSource.getUserProgress(userId, flashcardId)
+
+    suspend fun saveUserProgress(progress: UserProgress) =
+        dataSource.saveUserProgress(progress)
+
+    suspend fun saveQuizResponse(response: QuizResponse) =
+        dataSource.saveQuizResponse(response)
 }
