@@ -2,8 +2,10 @@ package com.lavariyalabs.snapy.android.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.lavariyalabs.snapy.android.ui.screen.*
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 
@@ -71,19 +73,17 @@ fun NavGraph(
         }
 
         // ========== FLASHCARD ==========
-//        composable(NavRoutes.FLASHCARD) { backStackEntry ->
-//            val unitId = backStackEntry.arguments?.getLong("unitId") ?: return@composable
-//
-//            FlashcardStudyScreen(
-//                navController = navController,
-//                unitId = unitId
-//            )
-//        }
-        composable(NavRoutes.FLASHCARD) {
-            FlashcardScreen(
+        composable(
+            route = NavRoutes.FLASHCARD,
+            arguments = listOf(navArgument("unitId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val unitId = backStackEntry.arguments?.getLong("unitId") ?: return@composable
+
+            FlashcardStudyScreen(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                unitId = unitId
             )
         }
+
     }
 }

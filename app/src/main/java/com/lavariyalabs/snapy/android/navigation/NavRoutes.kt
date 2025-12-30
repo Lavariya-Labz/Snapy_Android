@@ -20,8 +20,7 @@ object NavRoutes {
     // ========== APP ==========
     const val HOME = "home"
     const val PROFILE = "profile"
-    //const val FLASHCARD = "flashcard/{unitId}"
-    const val FLASHCARD = "flashcard"
+    const val FLASHCARD = "flashcard/{unitId}"
 
     /**
      * Helper to create flashcard route with ID
