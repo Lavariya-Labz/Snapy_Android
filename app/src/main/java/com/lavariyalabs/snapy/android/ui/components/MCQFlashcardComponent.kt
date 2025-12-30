@@ -1,4 +1,4 @@
-// File: com/lavariyalabs/snapy/android/ui/components/FlashcardComponent.kt
+// File: com/lavariyalabs/snapy/android/ui/components/MCQFlashcardComponent.kt
 
 package com.lavariyalabs.snapy.android.ui.components
 
@@ -6,7 +6,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,40 +22,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lavariyalabs.snapy.android.data.model.Flashcard
 
 /**
- * FlashcardComponent - Self-evaluation flashcard with flip animation
+ * MCQFlashcardComponent - Multiple choice flashcard
  *
  * Features:
- * - Card flip animation (3D effect)
- * - Text counter-rotation (readable on both sides)
- * - Color schemes based on card index
+ * - Static display (no flip)
+ * - Shows explanation after answer
+ * - Color schemes
  * - Decorative elements
  */
 @Composable
-fun FlashcardComponent(
-    isFlipped: Boolean,
-    question: String,
-    answer: String,
-    onCardClick: () -> Unit,
-    cardIndex: Int = 0
+fun MCQFlashcardComponent(
+    flashcard: Flashcard,
+    cardIndex: Int = 0,
+    isAnswered: Boolean = false,
+    selectedOptionLetter: String? = null
 ) {
 
-    // ========== ANIMATION: CARD ROTATION ==========
-    val cardRotation: Float by animateFloatAsState(
-        targetValue = if (isFlipped) 180f else 0f,
-        animationSpec = tween(durationMillis = 500),
-        label = "cardFlip"
-    )
-
-    // ========== ANIMATION: SCALE ==========
     val scale: Float by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(durationMillis = 400),
-        label = "cardScale"
+        label = "mcqCardScale"
     )
 
-    // ========== COLOR SCHEMES ==========
     data class CardColorScheme(
         val questionColor: Color,
         val answerColor: Color
@@ -71,30 +61,20 @@ fun FlashcardComponent(
     )
 
     val currentColorScheme = colorSchemes[cardIndex % colorSchemes.size]
-    val cardBackgroundColor = if (isFlipped)
-        currentColorScheme.answerColor
-    else
-        currentColorScheme.questionColor
 
-    // ========== MAIN CARD ==========
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .aspectRatio(0.65f)
             .clip(RoundedCornerShape(24.dp))
+            .background(color = currentColorScheme.questionColor)
             .graphicsLayer {
-                rotationY = cardRotation
-                cameraDistance = 12f * density
                 scaleX = scale
                 scaleY = scale
-            }
-            .background(color = cardBackgroundColor)
-            .clickable(enabled = true) { onCardClick() },
-        contentAlignment = Alignment.Center
+            },
+        contentAlignment = Alignment.TopCenter
     ) {
 
-        // ========== DECORATIVE ELEMENTS ==========
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -115,33 +95,26 @@ fun FlashcardComponent(
                 )
         )
 
-        // ========== CARD CONTENT ==========
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(32.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
 
-            // Side indicator
             Text(
-                text = if (isFlipped) "ANSWER" else "QUESTION",
+                text = "QUESTION",
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 1.5.sp,
-                modifier = Modifier
-                    .padding(bottom = 12.dp)
-                    .graphicsLayer {
-                        rotationY = -cardRotation
-                    }
+                modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Main text
             Text(
-                text = if (isFlipped) answer else question,
+                text = flashcard.question,
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
@@ -150,22 +123,45 @@ fun FlashcardComponent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateContentSize(animationSpec = tween(300))
-                    .graphicsLayer {
-                        rotationY = -cardRotation
-                    }
             )
 
-            // Hint text
-            Text(
-                text = if (isFlipped) "Tap to see question" else "Tap to see answer",
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 12.sp,
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .graphicsLayer {
-                        rotationY = -cardRotation
+            if (isAnswered) {
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.White.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Explanation",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        Text(
+                            text = flashcard.explanation,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp
+                        )
                     }
-            )
+                }
+            } else {
+                Text(
+                    text = "Select the correct answer",
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 20.dp)
+                )
+            }
         }
     }
 }
