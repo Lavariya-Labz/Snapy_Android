@@ -1,3 +1,5 @@
+// File: com/lavariyalabs/snapy/android/ui/screen/ProfileScreen.kt
+
 package com.lavariyalabs.snapy.android.ui.screen
 
 import androidx.compose.foundation.background
@@ -6,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,111 +24,136 @@ import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
  *
  * Shows:
  * - User name
- * - Grade
- * - Subject
- * - Language
- * - Back to study button
+ * - Selected grade and subject
+ * - Language preference
+ * - Statistics
  */
 @Composable
 fun ProfileScreen(
     navController: NavController,
     appStateViewModel: AppStateViewModel
 ) {
+
+    val userName by appStateViewModel.userName
+    val selectedGrade by appStateViewModel.selectedGrade
+    val selectedSubject by appStateViewModel.selectedSubject
+    val language by appStateViewModel.selectedLanguage
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF8FAFC))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
     ) {
+
         // ========== HEADER ==========
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF6366F1), RoundedCornerShape(16.dp))
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
+                .background(
+                    color = Color(0xFF6366F1),
+                    shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+                )
+                .padding(16.dp)
         ) {
             Text(
-                text = "👤",
-                fontSize = 64.sp
+                text = "← Back",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable {
+                        navController.popBackStack()
+                    }
+            )
+
+            Text(
+                text = "Profile",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Center)
             )
         }
 
         // ========== PROFILE INFO ==========
         Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ProfileInfoItem(
-                label = "Name",
-                value = appStateViewModel.userName.value
-            )
-
-            ProfileInfoItem(
-                label = "Grade",
-                value = appStateViewModel.selectedGrade.value
-            )
-
-            ProfileInfoItem(
-                label = "Subject",
-                value = appStateViewModel.selectedSubject.value
-            )
-
-            ProfileInfoItem(
-                label = "Language",
-                value = appStateViewModel.selectedLanguage.value.uppercase()
-            )
-        }
-
-        // ========== BACK BUTTON ==========
-        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(
-                    color = Color(0xFF6366F1),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .clickable {
-                    navController.navigate(NavRoutes.HOME)
-                },
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "Back to Study",
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp
+
+            // Name Card
+            ProfileCard(
+                title = "Name",
+                value = userName.ifEmpty { "Not set" }
+            )
+
+            // Grade Card
+            ProfileCard(
+                title = "Grade",
+                value = selectedGrade?.name ?: "Not selected"
+            )
+
+            // Subject Card
+            ProfileCard(
+                title = "Current Subject",
+                value = selectedSubject?.name ?: "Not selected"
+            )
+
+            // Language Card
+            ProfileCard(
+                title = "Language",
+                value = when (language) {
+                    "en" -> "English"
+                    "si" -> "Sinhala"
+                    "ta" -> "Tamil"
+                    else -> language
+                }
+            )
+
+            // Stats Card
+            ProfileCard(
+                title = "Cards Studied",
+                value = "0"
             )
         }
     }
 }
 
+/**
+ * ProfileCard - Information display card
+ */
 @Composable
-private fun ProfileInfoItem(
-    label: String,
+private fun ProfileCard(
+    title: String,
     value: String
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(12.dp))
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(12.dp)
+            )
             .padding(16.dp)
-            .padding(bottom = 12.dp)
     ) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color(0xFF64748B),
-            fontWeight = FontWeight.SemiBold
-        )
+        Column {
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF64748B)
+            )
 
-        Text(
-            text = value,
-            fontSize = 18.sp,
-            color = Color(0xFF1F2937),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1F2937),
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
     }
 }

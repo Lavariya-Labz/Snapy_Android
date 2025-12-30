@@ -20,16 +20,24 @@ import com.lavariyalabs.snapy.android.ui.components.ContinueButton
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 
 /**
- * OnboardingLanguageScreen - Step 1: Language Selection
+ * OnboardingLanguageScreen - Step 1 of onboarding
  *
- * User selects app language from dropdown
+ * User selects preferred language
+ * Stores selection in AppStateViewModel
  */
 @Composable
 fun OnboardingLanguageScreen(
     navController: NavController,
     appStateViewModel: AppStateViewModel
 ) {
-    val selectedLanguage = remember { mutableStateOf("en") }
+
+    val selectedLanguage = remember { mutableStateOf<String?>(null) }
+
+    val languages = listOf(
+        Language(code = "en", name = "English"),
+        Language(code = "si", name = "Sinhala (සිංහල)"),
+        Language(code = "ta", name = "Tamil (தமிழ்)")
+    )
 
     Column(
         modifier = Modifier
@@ -39,6 +47,7 @@ fun OnboardingLanguageScreen(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         // ========== HEADER ==========
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -60,39 +69,44 @@ fun OnboardingLanguageScreen(
             )
         }
 
-        // ========== LANGUAGE OPTIONS ==========
+        // ========== LANGUAGE SELECTION ==========
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            listOf(
-                "en" to "🇬🇧 English",
-                "si" to "🇱🇰 සිංහල"
-            ).forEach { (code, name) ->
-                LanguageOption(
-                    name = name,
-                    isSelected = selectedLanguage.value == code,
-                    onClick = { selectedLanguage.value = code }
+            languages.forEach { language ->
+                LanguageSelectionCard(
+                    language = language,
+                    isSelected = selectedLanguage.value == language.code,
+                    onClick = {
+                        selectedLanguage.value = language.code
+                    }
                 )
             }
         }
 
         // ========== CONTINUE BUTTON ==========
         ContinueButton(
-            enabled = true,
+            isEnabled = selectedLanguage.value != null,
             onClick = {
-                appStateViewModel.setLanguage(selectedLanguage.value)
-                navController.navigate(NavRoutes.ONBOARDING_NAME)
+                if (selectedLanguage.value != null) {
+                    appStateViewModel.setLanguage(selectedLanguage.value!!)
+                    navController.navigate(NavRoutes.ONBOARDING_NAME)
+                }
             }
         )
     }
 }
 
+/**
+ * LanguageSelectionCard - Individual language option
+ */
 @Composable
-private fun LanguageOption(
-    name: String,
+private fun LanguageSelectionCard(
+    language: Language,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -108,11 +122,22 @@ private fun LanguageOption(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = name,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = if (isSelected) Color.White else Color(0xFF1F2937)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = language.name,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (isSelected) Color.White else Color(0xFF1F2937)
+            )
+        }
     }
 }
+
+data class Language(
+    val code: String,
+    val name: String
+)

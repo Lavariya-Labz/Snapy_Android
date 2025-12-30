@@ -21,15 +21,17 @@ import com.lavariyalabs.snapy.android.ui.components.ContinueButton
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 
 /**
- * OnboardingNameScreen - Step 2: Name Entry
+ * OnboardingNameScreen - Step 2 of onboarding
  *
  * User enters their name
+ * Validates non-empty input
  */
 @Composable
 fun OnboardingNameScreen(
     navController: NavController,
     appStateViewModel: AppStateViewModel
 ) {
+
     val nameInput = remember { mutableStateOf("") }
 
     Column(
@@ -40,6 +42,7 @@ fun OnboardingNameScreen(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         // ========== HEADER ==========
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -72,7 +75,7 @@ fun OnboardingNameScreen(
                 value = nameInput.value,
                 onValueChange = { nameInput.value = it },
                 placeholder = {
-                    Text("Enter your name", color = Color(0xFF94A3B8))
+                    Text("Enter your full name", color = Color(0xFF94A3B8))
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,10 +97,12 @@ fun OnboardingNameScreen(
 
         // ========== CONTINUE BUTTON ==========
         ContinueButton(
-            enabled = nameInput.value.isNotEmpty(),
+            isEnabled = nameInput.value.isNotEmpty(),
             onClick = {
-                appStateViewModel.setUserName(nameInput.value)
-                navController.navigate(NavRoutes.ONBOARDING_GRADE)
+                if (nameInput.value.isNotEmpty()) {
+                    appStateViewModel.setUserName(nameInput.value)
+                    navController.navigate(NavRoutes.ONBOARDING_GRADE)
+                }
             }
         )
     }
