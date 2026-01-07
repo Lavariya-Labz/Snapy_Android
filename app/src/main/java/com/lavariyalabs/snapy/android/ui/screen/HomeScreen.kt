@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.lavariyalabs.snapy.android.data.model.StudyUnit
 import com.lavariyalabs.snapy.android.navigation.NavRoutes
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
+import com.lavariyalabs.snapy.android.ui.viewmodel.HomeViewModel
 
 /**
  * HomeScreen - Main app screen
@@ -39,23 +40,39 @@ import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 @Composable
 fun HomeScreen(
     navController: NavController,
-    appStateViewModel: AppStateViewModel
+    appStateViewModel: AppStateViewModel,
+    homeViewModel: HomeViewModel
 ) {
 
     val selectedSubject by appStateViewModel.selectedSubject
     val selectedTerm by appStateViewModel.selectedTerm
-    val subjects by appStateViewModel.subjects
-    val terms by appStateViewModel.terms
-    val units by appStateViewModel.units
-    val isLoading by appStateViewModel.isLoading
+    val selectedGrade by appStateViewModel.selectedGrade
+    val subjects by homeViewModel.subjects
+    val terms by homeViewModel.terms
+    val units by homeViewModel.units
+    val isLoading by homeViewModel.isLoading
 
     var showSubjectDropdown by remember { mutableStateOf(false) }
     var showTermDropdown by remember { mutableStateOf(false) }
 
-    // Ensure initial data is loaded if returning to screen
+    // Load subjects when grade is selected
+    LaunchedEffect(selectedGrade) {
+        selectedGrade?.let { grade ->
+            homeViewModel.loadSubjectsForGrade(grade.id)
+        }
+    }
+
+    // Load terms when subject is selected
     LaunchedEffect(selectedSubject) {
-        if (selectedSubject != null && terms.isEmpty() && !isLoading) {
-            appStateViewModel.loadTermsForSubject(selectedSubject!!.id)
+        selectedSubject?.let { subject ->
+            homeViewModel.loadTermsForSubject(subject.id)
+        }
+    }
+
+    // Load units when term is selected
+    LaunchedEffect(selectedTerm) {
+        selectedTerm?.let { term ->
+            homeViewModel.loadUnitsForTerm(term.id)
         }
     }
 

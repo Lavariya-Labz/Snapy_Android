@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.lavariyalabs.snapy.android.navigation.NavGraph
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
+import com.lavariyalabs.snapy.android.ui.viewmodel.ViewModelFactory
 
 //class MainActivity : ComponentActivity() {
 //    override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,15 +88,19 @@ fun SnapApp() {
     // Navigation controller
     val navController = rememberNavController()
 
+    // ViewModelFactory for dependency injection
+    val viewModelFactory = ViewModelFactory()
+
     // Shared app state (available to all screens)
-    val appStateViewModel: AppStateViewModel = viewModel()
+    val appStateViewModel: AppStateViewModel = viewModel(factory = viewModelFactory)
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         // Apply the padding to a container wrapping your content
         Box(modifier = Modifier.padding(innerPadding)) {
             NavGraph(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                appStateViewModel = appStateViewModel,
+                viewModelFactory = viewModelFactory
             )
         }
     }

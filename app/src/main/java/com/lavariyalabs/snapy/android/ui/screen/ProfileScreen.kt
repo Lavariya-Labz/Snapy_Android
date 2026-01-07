@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
+import com.lavariyalabs.snapy.android.ui.viewmodel.ProfileViewModel
 
 /**
  * ProfileScreen - User profile information
@@ -30,7 +31,8 @@ import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    appStateViewModel: AppStateViewModel
+    appStateViewModel: AppStateViewModel,
+    profileViewModel: ProfileViewModel
 ) {
 
     val userName by appStateViewModel.userName
@@ -113,9 +115,10 @@ fun ProfileScreen(
             )
 
             // Stats Card
+            val cardsStudied by profileViewModel.cardsStudied
             ProfileCard(
                 title = "Cards Studied",
-                value = "0"
+                value = cardsStudied.toString()
             )
         }
     }

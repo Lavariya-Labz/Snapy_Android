@@ -1,6 +1,7 @@
 package com.lavariyalabs.snapy.android.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -8,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.lavariyalabs.snapy.android.ui.screen.*
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
+import com.lavariyalabs.snapy.android.ui.viewmodel.ViewModelFactory
 
 /**
  * NavGraph - Defines all routes and screens
@@ -17,7 +19,8 @@ import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    appStateViewModel: AppStateViewModel
+    appStateViewModel: AppStateViewModel,
+    viewModelFactory: ViewModelFactory
 ) {
     NavHost(
         navController = navController,
@@ -32,7 +35,8 @@ fun NavGraph(
         composable(NavRoutes.ONBOARDING_LANGUAGE) {
             OnboardingLanguageScreen(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                appStateViewModel = appStateViewModel,
+                onboardingViewModel = viewModel(factory = viewModelFactory)
             )
         }
 
@@ -46,14 +50,16 @@ fun NavGraph(
         composable(NavRoutes.ONBOARDING_GRADE) {
             OnboardingGradeScreen(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                appStateViewModel = appStateViewModel,
+                onboardingViewModel = viewModel(factory = viewModelFactory)
             )
         }
 
         composable(NavRoutes.ONBOARDING_SUBJECT) {
             OnboardingSubjectScreen(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                appStateViewModel = appStateViewModel,
+                onboardingViewModel = viewModel(factory = viewModelFactory)
             )
         }
 
@@ -61,14 +67,16 @@ fun NavGraph(
         composable(NavRoutes.HOME) {
             HomeScreen(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                appStateViewModel = appStateViewModel,
+                homeViewModel = viewModel(factory = viewModelFactory)
             )
         }
 
         composable(NavRoutes.PROFILE) {
             ProfileScreen(
                 navController = navController,
-                appStateViewModel = appStateViewModel
+                appStateViewModel = appStateViewModel,
+                profileViewModel = viewModel(factory = viewModelFactory)
             )
         }
 
@@ -81,7 +89,8 @@ fun NavGraph(
 
             FlashcardStudyScreen(
                 navController = navController,
-                unitId = unitId
+                unitId = unitId,
+                viewModel = viewModel(factory = viewModelFactory)
             )
         }
 

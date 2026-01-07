@@ -24,6 +24,7 @@ import com.lavariyalabs.snapy.android.data.model.Grade
 import com.lavariyalabs.snapy.android.navigation.NavRoutes
 import com.lavariyalabs.snapy.android.ui.components.ContinueButton
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
+import com.lavariyalabs.snapy.android.ui.viewmodel.OnboardingViewModel
 
 /**
  * OnboardingGradeScreen - Step 3 of onboarding
@@ -34,17 +35,18 @@ import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 @Composable
 fun OnboardingGradeScreen(
     navController: NavController,
-    appStateViewModel: AppStateViewModel
+    appStateViewModel: AppStateViewModel,
+    onboardingViewModel: OnboardingViewModel
 ) {
 
     // Load grades from Supabase
     LaunchedEffect(Unit) {
-        appStateViewModel.loadGrades()
+        onboardingViewModel.loadGrades()
     }
 
     val selectedGrade = remember { mutableStateOf<Grade?>(null) }
-    val grades by appStateViewModel.grades
-    val isLoading by appStateViewModel.isLoading
+    val grades by onboardingViewModel.grades
+    val isLoading by onboardingViewModel.isLoading
 
     Column(
         modifier = Modifier

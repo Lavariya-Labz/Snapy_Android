@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.lavariyalabs.snapy.android.ui.components.*
 import com.lavariyalabs.snapy.android.ui.viewmodel.FlashcardViewModel
@@ -32,7 +31,7 @@ import com.lavariyalabs.snapy.android.ui.components.MCQAnswerButtonsSection
 fun FlashcardStudyScreen(
     navController: NavController,
     unitId: Long,
-    viewModel: FlashcardViewModel = viewModel()
+    viewModel: FlashcardViewModel
 ) {
     // Load flashcards from Supabase
     LaunchedEffect(unitId) {

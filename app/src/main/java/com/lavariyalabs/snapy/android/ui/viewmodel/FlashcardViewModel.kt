@@ -9,7 +9,6 @@ import androidx.compose.runtime.State
 import kotlinx.coroutines.launch
 import com.lavariyalabs.snapy.android.data.FlashcardRepository
 import com.lavariyalabs.snapy.android.data.model.*
-import com.lavariyalabs.snapy.android.data.remote.SupabaseDataSource
 
 /**
  * FlashcardViewModel - Manages flashcard UI state
@@ -20,11 +19,9 @@ import com.lavariyalabs.snapy.android.data.remote.SupabaseDataSource
  * - Tracking MCQ answers
  * - Recording progress
  */
-class FlashcardViewModel : ViewModel() {
-
-    // ========== DATA LAYER ==========
-    private val dataSource = SupabaseDataSource()
-    private val repository = FlashcardRepository(dataSource)
+class FlashcardViewModel(
+    private val repository: FlashcardRepository
+) : ViewModel() {
 
     // ========== UI STATE ==========
     private val _quizSession = mutableStateOf(QuizSession(totalCards = 0))

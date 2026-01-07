@@ -10,7 +10,6 @@ import com.lavariyalabs.snapy.android.data.model.Grade
 import com.lavariyalabs.snapy.android.data.model.Subject
 import com.lavariyalabs.snapy.android.data.model.Term
 import com.lavariyalabs.snapy.android.data.model.StudyUnit
-import com.lavariyalabs.snapy.android.data.remote.SupabaseDataSource
 
 /**
  * AppStateViewModel - Shared app state
@@ -19,11 +18,9 @@ import com.lavariyalabs.snapy.android.data.remote.SupabaseDataSource
  * - User selections (grade, subject, term, language)
  * - Lists of data (grades, subjects, terms, units)
  */
-class AppStateViewModel : ViewModel() {
-
-    // ========== DATA LAYER ==========
-    private val dataSource = SupabaseDataSource()
-    private val repository = FlashcardRepository(dataSource)
+class AppStateViewModel(
+    private val repository: FlashcardRepository
+) : ViewModel() {
 
     // ========== USER STATE ==========
     private val _userName = mutableStateOf("")

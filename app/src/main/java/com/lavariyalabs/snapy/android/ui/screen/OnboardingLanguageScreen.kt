@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import com.lavariyalabs.snapy.android.navigation.NavRoutes
 import com.lavariyalabs.snapy.android.ui.components.ContinueButton
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
+import com.lavariyalabs.snapy.android.ui.viewmodel.OnboardingViewModel
 
 /**
  * OnboardingLanguageScreen - Step 1 of onboarding
@@ -28,7 +29,8 @@ import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 @Composable
 fun OnboardingLanguageScreen(
     navController: NavController,
-    appStateViewModel: AppStateViewModel
+    appStateViewModel: AppStateViewModel,
+    onboardingViewModel: OnboardingViewModel
 ) {
 
     val selectedLanguage = remember { mutableStateOf<String?>(null) }
