@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.scale
 import androidx.compose.animation.core.animateFloatAsState
 import com.lavariyalabs.snapy.android.data.model.QuizOption
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * MCQAnswerButtonsSection - Multiple choice answer options
@@ -129,7 +130,12 @@ fun MCQOptionButton(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = !isAnswered
-            ) { onClick() }
+            ) { 
+                if (!isAnswered) {
+                    SoundManager.playClickSound()
+                    onClick() 
+                }
+            }
             .padding(vertical = 12.dp, horizontal = 16.dp)
             .scale(scale),
         contentAlignment = Alignment.CenterStart

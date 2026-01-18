@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 import com.lavariyalabs.snapy.android.ui.viewmodel.ProfileViewModel
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * ProfileScreen - User profile information
@@ -62,7 +63,10 @@ fun ProfileScreen(
                 color = Color.White,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .clickable { onNavigateBack() }
+                    .clickable {
+                        onNavigateBack()
+                        SoundManager.playClickSound()
+                    }
             )
 
             Text(

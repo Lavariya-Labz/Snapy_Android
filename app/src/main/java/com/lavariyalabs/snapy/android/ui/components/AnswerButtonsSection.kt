@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.scale
 import androidx.compose.animation.core.animateFloatAsState
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * AnswerButtonsSection - Self-evaluation answer buttons
@@ -106,7 +107,10 @@ private fun AnswerButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null
-            ) { onClick() }
+            ) { 
+                SoundManager.playClickSound()
+                onClick() 
+            }
             .padding(vertical = 14.dp, horizontal = 16.dp)
             .scale(scale),
         contentAlignment = Alignment.Center

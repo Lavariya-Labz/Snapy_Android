@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * ContinueButton - Reusable button for onboarding
@@ -46,7 +47,12 @@ fun ContinueButton(
                 color = backgroundColor,
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable(enabled = isEnabled) { onClick() },
+            .clickable(enabled = isEnabled) {
+                if (isEnabled) {
+                    SoundManager.playClickSound()
+                    onClick()
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         Text(

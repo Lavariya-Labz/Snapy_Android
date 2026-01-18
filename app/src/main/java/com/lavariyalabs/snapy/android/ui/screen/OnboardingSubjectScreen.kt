@@ -25,6 +25,7 @@ import com.lavariyalabs.snapy.android.data.model.Subject
 import com.lavariyalabs.snapy.android.ui.components.ContinueButton
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 import com.lavariyalabs.snapy.android.ui.viewmodel.OnboardingViewModel
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * OnboardingSubjectScreen - Step 4 of onboarding
@@ -107,6 +108,7 @@ fun OnboardingSubjectScreen(
                             subject = subject,
                             isSelected = selectedSubject.value?.id == subject.id,
                             onClick = {
+                                SoundManager.playClickSound()
                                 selectedSubject.value = subject
                                 appStateViewModel.setSelectedSubject(subject)
                             }

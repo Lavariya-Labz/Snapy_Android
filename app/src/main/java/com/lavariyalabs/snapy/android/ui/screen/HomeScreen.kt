@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.lavariyalabs.snapy.android.data.model.StudyUnit
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 import com.lavariyalabs.snapy.android.ui.viewmodel.HomeViewModel
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * HomeScreen - Main app screen
@@ -90,7 +91,9 @@ fun HomeScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clickable { /* Already on Home */ }
+                            .clickable { 
+                                SoundManager.playClickSound()
+                            }
                             .padding(8.dp)
                     ) {
                         Text("📚", fontSize = 24.sp)
@@ -106,7 +109,10 @@ fun HomeScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clickable { onNavigateToProfile() }
+                            .clickable {
+                                onNavigateToProfile()
+                                SoundManager.playClickSound()
+                            }
                             .padding(8.dp)
                     ) {
                         Text("👤", fontSize = 24.sp)
@@ -156,7 +162,10 @@ fun HomeScreen(
                                 color = if (showSubjectDropdown) Color(0xFF6366F1) else Color(0xFFE2E8F0),
                                 shape = RoundedCornerShape(12.dp)
                             )
-                            .clickable { showSubjectDropdown = !showSubjectDropdown }
+                            .clickable { 
+                                SoundManager.playClickSound()
+                                showSubjectDropdown = !showSubjectDropdown 
+                            }
                             .padding(16.dp)
                     ) {
                         Row(
@@ -189,6 +198,7 @@ fun HomeScreen(
                             DropdownMenuItem(
                                 text = { Text(subject.name) },
                                 onClick = {
+                                    SoundManager.playClickSound()
                                     appStateViewModel.setSelectedSubject(subject)
                                     showSubjectDropdown = false
                                 }
@@ -222,7 +232,10 @@ fun HomeScreen(
                                     color = if (showTermDropdown) Color(0xFF6366F1) else Color(0xFFE2E8F0),
                                     shape = RoundedCornerShape(12.dp)
                                 )
-                                .clickable { showTermDropdown = !showTermDropdown }
+                                .clickable { 
+                                    SoundManager.playClickSound()
+                                    showTermDropdown = !showTermDropdown 
+                                }
                                 .padding(16.dp)
                         ) {
                             Row(
@@ -255,6 +268,7 @@ fun HomeScreen(
                                 DropdownMenuItem(
                                     text = { Text(term.name) },
                                     onClick = {
+                                        SoundManager.playClickSound()
                                         appStateViewModel.setSelectedTerm(term)
                                         showTermDropdown = false
                                     }
@@ -304,6 +318,7 @@ fun HomeScreen(
                             unit = unit,
                             onClick = {
                                 onNavigateToFlashcard(unit.id)
+                                SoundManager.playClickSound()
                             }
                         )
                     }

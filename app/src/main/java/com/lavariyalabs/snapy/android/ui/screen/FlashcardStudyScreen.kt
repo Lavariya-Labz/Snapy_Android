@@ -18,7 +18,7 @@ import com.lavariyalabs.snapy.android.ui.components.*
 import com.lavariyalabs.snapy.android.ui.viewmodel.FlashcardViewModel
 import com.lavariyalabs.snapy.android.ui.components.MCQFlashcardComponent
 import com.lavariyalabs.snapy.android.ui.components.MCQAnswerButtonsSection
-
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * FlashcardStudyScreen - Main study interface
@@ -94,7 +94,10 @@ fun FlashcardStudyScreen(
                 color = Color.White,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .clickable { onNavigateBack() }
+                    .clickable {
+                        onNavigateBack()
+                        SoundManager.playClickSound()
+                    }
             )
 
             Text(
@@ -178,7 +181,10 @@ fun FlashcardStudyScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.goToNextCardMCQ() }
+                                .clickable { 
+                                    SoundManager.playClickSound()
+                                    viewModel.goToNextCardMCQ() 
+                                }
                                 .background(Color.White)
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center

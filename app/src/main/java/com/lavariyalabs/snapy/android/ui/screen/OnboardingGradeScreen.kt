@@ -23,6 +23,7 @@ import com.lavariyalabs.snapy.android.data.model.Grade
 import com.lavariyalabs.snapy.android.ui.components.ContinueButton
 import com.lavariyalabs.snapy.android.ui.viewmodel.AppStateViewModel
 import com.lavariyalabs.snapy.android.ui.viewmodel.OnboardingViewModel
+import com.lavariyalabs.snapy.android.utils.SoundManager
 
 /**
  * OnboardingGradeScreen - Step 3 of onboarding
@@ -97,6 +98,7 @@ fun OnboardingGradeScreen(
                         grade = grade,
                         isSelected = selectedGrade.value?.id == grade.id,
                         onClick = {
+                            SoundManager.playClickSound()
                             selectedGrade.value = grade
                             appStateViewModel.setSelectedGrade(grade)
                         }
