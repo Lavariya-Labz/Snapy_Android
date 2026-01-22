@@ -225,4 +225,86 @@ class SupabaseDataSource {
             e.printStackTrace()
         }
     }
+
+    // ========== STATISTICS & ANALYTICS ==========
+
+    /**
+     * Get all user progress for a user
+     */
+    suspend fun getAllUserProgress(userId: String): List<UserProgress> {
+        return try {
+            SupabaseConfig.supabaseClient
+                .from("user_progress")
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+                .decodeList<UserProgress>()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    /**
+     * Get cards due for review today
+     */
+    suspend fun getDueCards(userId: String, today: String): List<UserProgress> {
+        return try {
+            SupabaseConfig.supabaseClient
+                .from("user_progress")
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                        lte("next_review_date", today)
+                    }
+                }
+                .decodeList<UserProgress>()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    /**
+     * Get total quiz responses for a user
+     */
+    suspend fun getTotalQuizResponses(userId: String): Int {
+        return try {
+            val responses = SupabaseConfig.supabaseClient
+                .from("quiz_responses")
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+                .decodeList<QuizResponse>()
+            responses.size
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0
+        }
+    }
+
+    /**
+     * Get quiz responses count by type
+     */
+    suspend fun getQuizResponsesByType(userId: String, responseType: String): Int {
+        return try {
+            val responses = SupabaseConfig.supabaseClient
+                .from("quiz_responses")
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                        eq("response_type", responseType)
+                    }
+                }
+                .decodeList<QuizResponse>()
+            responses.size
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0
+        }
+    }
 }

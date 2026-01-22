@@ -42,4 +42,17 @@ class FlashcardRepository(
 
     suspend fun saveQuizResponse(response: QuizResponse) =
         dataSource.saveQuizResponse(response)
+
+    // ========== STATISTICS ==========
+    suspend fun getAllUserProgress(userId: String): List<UserProgress> =
+        dataSource.getAllUserProgress(userId)
+
+    suspend fun getDueCards(userId: String, today: String): List<UserProgress> =
+        dataSource.getDueCards(userId, today)
+
+    suspend fun getTotalQuizResponses(userId: String): Int =
+        dataSource.getTotalQuizResponses(userId)
+
+    suspend fun getQuizResponsesByType(userId: String, responseType: String): Int =
+        dataSource.getQuizResponsesByType(userId, responseType)
 }

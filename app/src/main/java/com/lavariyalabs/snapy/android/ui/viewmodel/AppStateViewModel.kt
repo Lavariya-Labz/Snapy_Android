@@ -23,6 +23,9 @@ class AppStateViewModel(
 ) : ViewModel() {
 
     // ========== USER STATE ==========
+    private val _userId = mutableStateOf("default_user")
+    val userId: State<String> = _userId
+
     private val _userName = mutableStateOf("")
     val userName: State<String> = _userName
 
@@ -58,6 +61,11 @@ class AppStateViewModel(
 
     fun setUserName(name: String) {
         _userName.value = name
+        // Generate userId based on name (simple approach for now)
+        // In production, this should be from authentication system
+        if (name.isNotEmpty()) {
+            _userId.value = "user_${name.lowercase().replace(" ", "_")}"
+        }
     }
 
     fun setLanguage(language: String) {

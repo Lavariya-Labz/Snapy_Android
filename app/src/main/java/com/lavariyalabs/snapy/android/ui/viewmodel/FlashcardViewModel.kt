@@ -9,6 +9,9 @@ import androidx.compose.runtime.State
 import kotlinx.coroutines.launch
 import com.lavariyalabs.snapy.android.data.FlashcardRepository
 import com.lavariyalabs.snapy.android.data.model.*
+import com.lavariyalabs.snapy.android.utils.SM2Algorithm
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * FlashcardViewModel - Manages flashcard UI state
@@ -22,6 +25,9 @@ import com.lavariyalabs.snapy.android.data.model.*
 class FlashcardViewModel(
     private val repository: FlashcardRepository
 ) : ViewModel() {
+
+    // ========== USER ID ==========
+    var userId: String = "default_user" // Will be set from AppStateViewModel
 
     // ========== UI STATE ==========
     private val _quizSession = mutableStateOf(QuizSession(totalCards = 0))
@@ -142,5 +148,71 @@ class FlashcardViewModel(
         _quizSession.value = QuizSession(totalCards = _flashcards.value.size)
         _currentCardFlipped.value = false
         resetMCQState()
+    }
+
+    // ========== SPACED REPETITION (SM2) ==========
+
+    /**
+     * Record answer with difficulty and update SM2 progress
+     *
+     * @param isCorrect Whether answer was correct
+     * @param difficulty "EASY", "MEDIUM", or "HARD"
+     */
+    fun recordAnswerWithDifficulty(isCorrect: Boolean, difficulty: String = "MEDIUM") {
+        val currentCard = getCurrentCard() ?: return
+
+        viewModelScope.launch {
+            try {
+                // Convert difficulty to quality score (0-5)
+                val quality = SM2Algorithm.difficultyToQuality(difficulty, isCorrect)
+
+                // Get current progress
+                val currentProgress = repository.getUserProgress(userId, currentCard.id)
+
+                // Calculate new progress using SM2
+                val newProgress = SM2Algorithm.calculateNewProgress(
+                    currentProgress = currentProgress,
+                    quality = quality,
+                    userId = userId,
+                    flashcardId = currentCard.id
+                )
+
+                // Save progress to database
+                repository.saveUserProgress(newProgress)
+
+                // Save quiz response
+                val response = QuizResponse(
+                    id = 0, // Will be set by database
+                    userId = userId,
+                    flashcardId = currentCard.id,
+                    selectedOptionId = null,
+                    responseType = if (isCorrect) "CORRECT" else "INCORRECT",
+                    timeTakenSeconds = null,
+                    respondedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                )
+                repository.saveQuizResponse(response)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Continue even if saving fails
+            }
+        }
+    }
+
+    /**
+     * Record answer for SELF_EVAL cards with difficulty
+     */
+    fun recordSelfEvalAnswer(knew: Boolean, difficulty: String = "MEDIUM") {
+        recordAnswer(isCorrect = knew)
+        recordAnswerWithDifficulty(isCorrect = knew, difficulty = difficulty)
+    }
+
+    /**
+     * Record answer for MCQ cards
+     */
+    fun recordMCQAnswer(isCorrect: Boolean) {
+        recordAnswer(isCorrect = isCorrect)
+        // MCQ is always considered MEDIUM difficulty
+        recordAnswerWithDifficulty(isCorrect = isCorrect, difficulty = "MEDIUM")
     }
 }

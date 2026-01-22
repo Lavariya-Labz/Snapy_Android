@@ -140,16 +140,31 @@ fun FlashcardStudyScreen(
                         )
                     }
 
-                    AnswerButtonsSection(
-                        onDidntKnow = {
-                            viewModel.recordAnswer(isCorrect = false)
-                            viewModel.goToNextCard()
-                        },
-                        onKnew = {
-                            viewModel.recordAnswer(isCorrect = true)
-                            viewModel.goToNextCard()
+                    // Show difficulty buttons only after card is flipped
+                    if (isCardFlipped) {
+                        DifficultyButtonsSection(
+                            onDifficulty = { difficulty ->
+                                val knew = difficulty != "FAILED"
+                                viewModel.recordSelfEvalAnswer(knew, difficulty)
+                                viewModel.goToNextCard()
+                            }
+                        )
+                    } else {
+                        // Show flip instruction
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Tap card to reveal answer",
+                                fontSize = 14.sp,
+                                color = Color(0xFF64748B),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
-                    )
+                    }
                 } else if (currentCard.type == "MCQ") {
                     Box(
                         modifier = Modifier
@@ -198,6 +213,122 @@ fun FlashcardStudyScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * DifficultyButtonsSection - Difficulty rating for SELF_EVAL cards
+ *
+ * @param onDifficulty Callback with difficulty: "FAILED", "HARD", "MEDIUM", or "EASY"
+ */
+@Composable
+private fun DifficultyButtonsSection(
+    onDifficulty: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "How well did you know this?",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF64748B),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Failed button
+        DifficultyButton(
+            text = "Didn't Know",
+            color = Color(0xFFEF4444),
+            description = "Show sooner"
+        ) {
+            SoundManager.playClickSound()
+            onDifficulty("FAILED")
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Hard button
+            DifficultyButton(
+                text = "Hard",
+                color = Color(0xFFF59E0B),
+                description = "< 1 day",
+                modifier = Modifier.weight(1f)
+            ) {
+                SoundManager.playClickSound()
+                onDifficulty("HARD")
+            }
+
+            // Medium button
+            DifficultyButton(
+                text = "Medium",
+                color = Color(0xFF3B82F6),
+                description = "1-6 days",
+                modifier = Modifier.weight(1f)
+            ) {
+                SoundManager.playClickSound()
+                onDifficulty("MEDIUM")
+            }
+
+            // Easy button
+            DifficultyButton(
+                text = "Easy",
+                color = Color(0xFF10B981),
+                description = "> 6 days",
+                modifier = Modifier.weight(1f)
+            ) {
+                SoundManager.playClickSound()
+                onDifficulty("EASY")
+            }
+        }
+    }
+}
+
+/**
+ * DifficultyButton - Individual difficulty button
+ */
+@Composable
+private fun DifficultyButton(
+    text: String,
+    color: Color,
+    description: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .background(
+                color = color,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(vertical = 16.dp, horizontal = 12.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = text,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Text(
+                text = description,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color.White.copy(alpha = 0.9f),
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
